@@ -11,13 +11,18 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            /* Prevent tap highlighting on mobile */
             -webkit-tap-highlight-color: transparent; 
+        }
+
+        html, body {
+            /* Solid background color prevents white flashes before gradient loads */
+            background-color: #0a0e27; 
+            width: 100%;
+            height: 100%;
         }
 
         body {
             background: linear-gradient(135deg, #0a0e27 0%, #1a1f4b 30%, #0d1128 60%, #1a0a2e 100%);
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -44,7 +49,7 @@
             border-radius: 50%;
             animation: twinkle var(--duration) ease-in-out infinite;
             opacity: 0;
-            will-change: opacity, transform; /* Hardware acceleration */
+            will-change: opacity, transform; 
         }
 
         @keyframes twinkle {
@@ -69,8 +74,8 @@
         .book-container {
             position: relative;
             z-index: 10;
-            width: 900px;
-            height: 650px;
+            width: 800px;
+            height: 600px;
             perspective: 2000px;
         }
 
@@ -138,12 +143,6 @@
             z-index: 10;
         }
 
-        .cover-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            z-index: 10;
-        }
-
         .open-btn {
             margin-top: 40px;
             padding: 12px 40px;
@@ -206,8 +205,8 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 520px;
-            height: 380px;
+            width: 85%;
+            height: 85%;
             perspective: 1000px;
         }
 
@@ -218,10 +217,9 @@
             transition: transform 0.5s ease;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            will-change: transform;
+            background: rgba(0,0,0,0.03); /* Soft background for images */
         }
 
-        /* Only apply 3D card tilt on desktop to prevent mobile lag */
         @media (hover: hover) and (pointer: fine) {
             .card:hover {
                 transform: rotateY(5deg) rotateX(-3deg) translateZ(10px);
@@ -230,12 +228,13 @@
         }
 
         .card-image {
-            width: 100%; height: 100%;
-            object-fit: cover;
+            width: 100%; 
+            height: 100%;
+            /* contain ensures the image is NEVER cut off, regardless of size */
+            object-fit: contain; 
             border-radius: 12px;
             display: block;
-            /* Optimizes image rendering */
-            transform: translateZ(0); 
+            padding: 10px; /* Optional breathing room */
         }
 
         /* Navigation */
@@ -262,68 +261,40 @@
         .nav-btn.next { right: 30px; }
         .nav-btn.hidden { opacity: 0; pointer-events: none; }
 
-        /* Page flip states */
         .page.flipped { transform: rotateY(-180deg); }
         .page.flipping { z-index: 50 !important; }
 
-        /* Cover flip & Open State */
-        .book.open {
-            transform: translateX(50%);
-        }
-        .book.open .cover {
-            transform: rotateY(-160deg);
-        }
+        .book.open { transform: translateX(50%); }
+        .book.open .cover { transform: rotateY(-160deg); }
 
-        /* 📱 MOBILE RESPONSIVE UI 📱 */
-        @media (max-width: 1000px) {
+        /* 📱 PERFECT MOBILE UI 📱 */
+        @media (max-width: 800px) {
             .book-container {
-                width: 80vw;
-                height: 60vh;
+                /* Uses Viewport Width to ensure it symmetrically fits the screen perfectly */
+                width: 48vw; 
+                height: 65vh; 
+            }
+            .book.open {
+                /* Shifts the spine exactly to the center of the mobile screen */
+                transform: translateX(50%); 
             }
             .card-container {
-                width: 80%;
-                height: 70%;
-            }
-            .cover-title { font-size: 1.8rem; }
-        }
-
-        @media (max-width: 600px) {
-            .moon {
-                top: 20px; right: 20px;
-                width: 50px; height: 50px;
-            }
-            .book-container {
-                width: 90vw;
-                height: 65vh;
-            }
-            /* Crucial fix: Scales the book down so both pages fit on a phone screen */
-            .book.open {
-                transform: translateX(50%) scale(0.55);
+                width: 90%;
+                height: 90%;
             }
             .cover-title {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
                 padding: 0 10px;
             }
-            .cover-subtitle {
-                font-size: 1.1rem;
-            }
-            .open-btn {
-                padding: 10px 25px;
-                font-size: 0.9rem;
-            }
-            .card-container {
-                width: 85%;
-                height: 65%;
-            }
-            .nav-btn {
-                width: 40px; height: 40px;
-                font-size: 1.2rem;
-            }
+            .cover-subtitle { font-size: 1rem; }
+            .open-btn { padding: 10px 20px; font-size: 0.8rem; }
+            .cover-decoration { top: 15px; left: 15px; right: 15px; bottom: 15px; }
+            
+            .nav-btn { width: 40px; height: 40px; font-size: 1.2rem; }
             .nav-btn.prev { left: 10px; }
             .nav-btn.next { right: 10px; }
-            .cover-decoration {
-                top: 15px; left: 15px; right: 15px; bottom: 15px;
-            }
+            
+            .moon { top: 20px; right: 20px; width: 40px; height: 40px; }
         }
 
         /* Loading Screen */
@@ -333,7 +304,7 @@
             background: #0a0e27;
             display: flex; justify-content: center; align-items: center;
             z-index: 9999;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.6s ease;
         }
         .loading.hidden { opacity: 0; pointer-events: none; }
         .loading-text {
@@ -345,7 +316,7 @@
 </head>
 <body>
     <div class="loading" id="loading">
-        <div class="loading-text">✨ Opening Journal... ✨</div>
+        <div class="loading-text">✨ Preparing Your Journal... ✨</div>
     </div>
 
     <div class="stars-bg" id="starsBg"></div>
@@ -358,7 +329,6 @@
         <div class="book" id="book">
             <div class="cover" id="cover">
                 <div class="cover-decoration"></div>
-                <div class="cover-icon">🌙</div>
                 <h1 class="cover-title">Something That Brings<br>Smile On Someone's Face</h1>
                 <p class="cover-subtitle">A Collection of Warmth & Hope</p>
                 <button class="open-btn" onclick="openBook()">OPEN JOURNAL</button>
@@ -368,7 +338,7 @@
 
             <div class="back-cover">
                 <div class="cover-decoration"></div>
-                <div class="cover-icon">💫</div>
+                <div style="font-size: 3rem; color:#e8dcc8;">💫</div>
             </div>
         </div>
     </div>
@@ -385,12 +355,11 @@
         let currentPage = -1; 
         let isAnimating = false;
         const totalPages = images.length;
-        // Detect if mobile to reduce particles and ease performance
         const isMobile = window.innerWidth <= 768;
 
         function generateStars() {
             const starsBg = document.getElementById('starsBg');
-            const starCount = isMobile ? 40 : 100; // Less stars on mobile = less lag
+            const starCount = isMobile ? 30 : 80;
 
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
@@ -426,7 +395,6 @@
                 const imgEl = document.createElement('img');
                 imgEl.className = 'card-image';
                 imgEl.src = img;
-                imgEl.loading = 'lazy'; // crucial for performance with 15 images
 
                 card.appendChild(imgEl);
                 cardContainer.appendChild(card);
@@ -443,6 +411,37 @@
                 page.appendChild(front);
                 page.appendChild(back);
                 container.appendChild(page);
+            });
+        }
+
+        // IMAGE PRELOADER - Fixes the white blinking glitch
+        function preloadImages() {
+            let loadedImages = 0;
+            
+            // If there are no images, just start
+            if(images.length === 0) {
+                document.getElementById('loading').classList.add('hidden');
+                return;
+            }
+
+            images.forEach((src) => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedImages++;
+                    // Only hide loading screen when ALL images are fully loaded
+                    if (loadedImages === images.length) {
+                        setTimeout(() => {
+                            document.getElementById('loading').classList.add('hidden');
+                        }, 500); // small delay for smoothness
+                    }
+                };
+                img.onerror = () => {
+                    loadedImages++; // Prevents endless loading if 1 image path is broken
+                    if (loadedImages === images.length) {
+                        document.getElementById('loading').classList.add('hidden');
+                    }
+                };
+                img.src = src;
             });
         }
 
@@ -503,7 +502,7 @@
             }
         }
 
-        // Swipe Navigation Optimization
+        // Swipe Navigation
         let touchstartX = 0;
         let touchendX = 0;
 
@@ -516,7 +515,6 @@
             handleGesture();
         }, { passive: true });
 
-        // Prevent vertical scrolling on the book container while trying to swipe
         document.querySelector('.book-container').addEventListener('touchmove', (e) => {
             e.preventDefault();
         }, { passive: false });
@@ -535,9 +533,7 @@
         window.addEventListener('load', () => {
             generateStars();
             createPages();
-            setTimeout(() => {
-                document.getElementById('loading').classList.add('hidden');
-            }, 800);
+            preloadImages(); // Triggers the safe loading system
         });
     </script>
 </body>
