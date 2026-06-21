@@ -385,6 +385,8 @@
         .nav-btn.hidden { opacity: 0; pointer-events: none; }
 
         .page.flipped { transform: rotateY(-180deg); }
+        
+        /* THIS ENSURES PAGES STAY ON TOP WHILE FLIPPING TO PREVENT GLITCHES */
         .page.flipping { z-index: 50 !important; }
 
         .book.open { transform: translateX(50%); }
@@ -395,30 +397,34 @@
         /* ================================== */
         @media (max-width: 800px) {
             .book-container {
-                width: 75vw; 
-                height: 65vh; 
+                width: 48vw !important; /* 48% of screen width for ONE page */
+                height: 55vh !important; 
             }
             .book.open {
-                transform: translateX(50%) scale(0.5); 
+                /* Shifts the spine exactly to the center.
+                   Left page takes up 48vw, Right page takes up 48vw.
+                   Total open width = 96vw. Fits perfectly on screen. */
+                transform: translateX(50%) !important; 
             }
             .card-container {
                 width: 100%;
                 height: 100%;
-                padding: 15px;
+                padding: 10px;
             }
             .card {
                 max-width: 100%;
                 max-height: 100%;
             }
             .cover-title {
-                font-size: 1.4rem;
+                font-size: 1.2rem;
                 padding: 0 10px;
             }
-            .cover-subtitle { font-size: 1rem; }
-            .open-btn { padding: 10px 20px; font-size: 0.8rem; }
+            .cover-subtitle { font-size: 0.9rem; }
+            .open-btn { padding: 8px 16px; font-size: 0.8rem; margin-top: 20px;}
             .cover-decoration { top: 15px; left: 15px; right: 15px; bottom: 15px; }
 
             .nav-btn { width: 40px; height: 40px; font-size: 1.2rem; }
+            /* Moved buttons out to the edges so they don't block the pages */
             .nav-btn.prev { left: 5px; }
             .nav-btn.next { right: 5px; }
 
@@ -547,6 +553,7 @@
             for (let i = 0; i < totalPages; i++) {
                 const page = document.createElement('div');
                 page.className = 'page';
+                // Set initial Z-index 
                 page.style.zIndex = totalPages - i;
 
                 const frontImageIndex = i * 2;
@@ -780,27 +787,46 @@
         }, { passive: false });
 
         // ===== BOOK FUNCTIONS =====
+
+        // THIS IS THE FIX FOR THE "TELEPORTING" Z-INDEX ISSUE
+        function updateZIndex() {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach((page, index) => {
+                if (index < currentPage) {
+                    // Page has flipped to the left side -> Give it a Z-index that puts it on top of the left stack
+                    page.style.zIndex = index + 1; 
+                } else {
+                    // Page is still on the right side -> Keep it stacked properly on the right
+                    page.style.zIndex = totalPages - index;
+                }
+            });
+        }
+
         function openBook() {
             if (isAnimating) return;
             isAnimating = true;
             document.getElementById('book').classList.add('open');
             setTimeout(() => {
                 currentPage = 0;
+                updateZIndex();
                 updateNavButtons();
                 isAnimating = false;
             }, 800);
         }
 
         function nextPage() {
-            if (isAnimating || currentPage >= totalPages - 1) return;
+            if (isAnimating || currentPage >= totalPages) return;
             isAnimating = true;
             const pages = document.querySelectorAll('.page');
             const page = pages[currentPage];
+            
+            // Starts the flip animation
             page.classList.add('flipping', 'flipped');
 
             setTimeout(() => {
                 page.classList.remove('flipping');
                 currentPage++;
+                updateZIndex(); // Resets layering perfectly when animation ends
                 updateNavButtons();
                 isAnimating = false;
             }, 900);
@@ -812,11 +838,14 @@
             currentPage--;
             const pages = document.querySelectorAll('.page');
             const page = pages[currentPage];
+            
+            // The 'flipping' class pops it immediately to the top so it doesn't slide under other pages
             page.classList.add('flipping');
             page.classList.remove('flipped');
 
             setTimeout(() => {
                 page.classList.remove('flipping');
+                updateZIndex(); // Resets layering perfectly when animation ends
                 updateNavButtons();
                 isAnimating = false;
             }, 900);
@@ -833,7 +862,7 @@
                 prevBtn.classList.remove('hidden');
                 nextBtn.classList.remove('hidden');
                 if (currentPage === 0) prevBtn.classList.add('hidden');
-                if (currentPage === totalPages - 1) nextBtn.classList.add('hidden');
+                if (currentPage === totalPages) nextBtn.classList.add('hidden');
             }
         }
 
