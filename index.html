@@ -199,7 +199,7 @@
             z-index: 1;
         }
 
-        /* Card on each page */
+        /* Card on each page - CENTERED */
         .card-container {
             position: absolute;
             top: 0; left: 0;
@@ -208,12 +208,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 30px;
         }
 
         .card {
-            width: 100%; 
+            width: 100%;
             height: 100%;
+            max-width: 420px;
+            max-height: 580px;
             position: relative;
             transform-style: preserve-3d;
             transition: transform 0.5s ease;
@@ -235,9 +237,9 @@
         }
 
         .card-image {
-            max-width: 100%; 
-            max-height: 100%;
-            object-fit: contain; 
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
             border-radius: 8px;
             display: block;
             transition: transform 0.3s ease;
@@ -393,20 +395,20 @@
         /* ================================== */
         @media (max-width: 800px) {
             .book-container {
-                /* Keeps the closed book cover a good visible size */
                 width: 75vw; 
                 height: 65vh; 
             }
             .book.open {
-                /* Shifts the book to the center and correctly scales it down */
-                /* 75vw * 2 pages = 150vw open width. Scaled to 0.5 = 75vw total width. */
-                /* This perfectly fits the 100vw screen width without overflowing! */
                 transform: translateX(50%) scale(0.5); 
             }
             .card-container {
                 width: 100%;
                 height: 100%;
                 padding: 15px;
+            }
+            .card {
+                max-width: 100%;
+                max-height: 100%;
             }
             .cover-title {
                 font-size: 1.4rem;
@@ -416,7 +418,6 @@
             .open-btn { padding: 10px 20px; font-size: 0.8rem; }
             .cover-decoration { top: 15px; left: 15px; right: 15px; bottom: 15px; }
 
-            /* Buttons pushed to outer edges so they don't block the scaled-down book */
             .nav-btn { width: 40px; height: 40px; font-size: 1.2rem; }
             .nav-btn.prev { left: 5px; }
             .nav-btn.next { right: 5px; }
@@ -543,33 +544,49 @@
                 page.className = 'page';
                 page.style.zIndex = totalPages - index;
 
+                // FRONT SIDE (right side when open) - Image
                 const front = document.createElement('div');
                 front.className = 'page-front';
 
-                const cardContainer = document.createElement('div');
-                cardContainer.className = 'card-container';
+                const frontContainer = document.createElement('div');
+                frontContainer.className = 'card-container';
 
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => openLightbox(index);
+                const frontCard = document.createElement('div');
+                frontCard.className = 'card';
+                frontCard.onclick = () => openLightbox(index);
 
-                const imgEl = document.createElement('img');
-                imgEl.className = 'card-image';
-                imgEl.src = img;
-                imgEl.alt = 'Journal Image ' + (index + 1);
-                imgEl.draggable = false;
+                const frontImg = document.createElement('img');
+                frontImg.className = 'card-image';
+                frontImg.src = img;
+                frontImg.alt = 'Journal Image ' + (index + 1);
+                frontImg.draggable = false;
 
-                card.appendChild(imgEl);
-                cardContainer.appendChild(card);
-                front.appendChild(cardContainer);
+                frontCard.appendChild(frontImg);
+                frontContainer.appendChild(frontCard);
+                front.appendChild(frontContainer);
 
+                // BACK SIDE (left side when open) - Image only, same dimensions, centered
                 const back = document.createElement('div');
                 back.className = 'page-back';
-                back.innerHTML = `
-                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-                        <div style="font-size:2rem;margin-bottom:10px;">🌸</div>
-                    </div>
-                `;
+
+                const backContainer = document.createElement('div');
+                backContainer.className = 'card-container';
+
+                const backCard = document.createElement('div');
+                backCard.className = 'card';
+                // Use previous image for back, or last image for first page
+                const backImageIndex = index === 0 ? images.length - 1 : index - 1;
+                backCard.onclick = () => openLightbox(backImageIndex);
+
+                const backImg = document.createElement('img');
+                backImg.className = 'card-image';
+                backImg.src = images[backImageIndex];
+                backImg.alt = 'Journal Image ' + (backImageIndex + 1);
+                backImg.draggable = false;
+
+                backCard.appendChild(backImg);
+                backContainer.appendChild(backCard);
+                back.appendChild(backContainer);
 
                 page.appendChild(front);
                 page.appendChild(back);
