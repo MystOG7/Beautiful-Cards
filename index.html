@@ -199,7 +199,7 @@
             z-index: 1;
         }
 
-        /* Card on each page - CENTERED */
+        /* Card on each page - PERFECTLY CENTERED FOR LEFT AND RIGHT */
         .card-container {
             position: absolute;
             top: 0; left: 0;
@@ -508,7 +508,11 @@
 
         let currentPage = -1; 
         let isAnimating = false;
-        const totalPages = images.length;
+        
+        // Proper Book Pagination Calculation (2 images per physical leaf of paper)
+        const totalImages = images.length;
+        const totalPages = Math.ceil(totalImages / 2); 
+        
         const isMobile = window.innerWidth <= 768;
 
         // Lightbox state
@@ -539,59 +543,45 @@
         function createPages() {
             const container = document.getElementById('pagesContainer');
 
-            images.forEach((img, index) => {
+            // Construct physical pages with 2 images on each piece of paper
+            for (let i = 0; i < totalPages; i++) {
                 const page = document.createElement('div');
                 page.className = 'page';
-                page.style.zIndex = totalPages - index;
+                page.style.zIndex = totalPages - i;
 
-                // FRONT SIDE (right side when open) - Image
+                const frontImageIndex = i * 2;
+                const backImageIndex = i * 2 + 1;
+
+                // FRONT SIDE (Right side when opened)
                 const front = document.createElement('div');
                 front.className = 'page-front';
+                
+                if (frontImageIndex < totalImages) {
+                    front.innerHTML = `
+                        <div class="card-container">
+                            <div class="card" onclick="openLightbox(${frontImageIndex})">
+                                <img class="card-image" src="${images[frontImageIndex]}" alt="Journal Image" draggable="false">
+                            </div>
+                        </div>`;
+                }
 
-                const frontContainer = document.createElement('div');
-                frontContainer.className = 'card-container';
-
-                const frontCard = document.createElement('div');
-                frontCard.className = 'card';
-                frontCard.onclick = () => openLightbox(index);
-
-                const frontImg = document.createElement('img');
-                frontImg.className = 'card-image';
-                frontImg.src = img;
-                frontImg.alt = 'Journal Image ' + (index + 1);
-                frontImg.draggable = false;
-
-                frontCard.appendChild(frontImg);
-                frontContainer.appendChild(frontCard);
-                front.appendChild(frontContainer);
-
-                // BACK SIDE (left side when open) - Image only, same dimensions, centered
+                // BACK SIDE (Left side when turned)
                 const back = document.createElement('div');
                 back.className = 'page-back';
-
-                const backContainer = document.createElement('div');
-                backContainer.className = 'card-container';
-
-                const backCard = document.createElement('div');
-                backCard.className = 'card';
-                // Use previous image for back, or last image for first page
-                const backImageIndex = index === 0 ? images.length - 1 : index - 1;
-                backCard.onclick = () => openLightbox(backImageIndex);
-
-                const backImg = document.createElement('img');
-                backImg.className = 'card-image';
-                backImg.src = images[backImageIndex];
-                backImg.alt = 'Journal Image ' + (backImageIndex + 1);
-                backImg.draggable = false;
-
-                backCard.appendChild(backImg);
-                backContainer.appendChild(backCard);
-                back.appendChild(backContainer);
+                
+                if (backImageIndex < totalImages) {
+                    back.innerHTML = `
+                        <div class="card-container">
+                            <div class="card" onclick="openLightbox(${backImageIndex})">
+                                <img class="card-image" src="${images[backImageIndex]}" alt="Journal Image" draggable="false">
+                            </div>
+                        </div>`;
+                }
 
                 page.appendChild(front);
                 page.appendChild(back);
                 container.appendChild(page);
-            });
+            }
         }
 
         // IMAGE PRELOADER
@@ -625,13 +615,12 @@
 
         // ===== LIGHTBOX FUNCTIONS =====
         function openLightbox(index) {
-            currentPage = index;
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightboxImg');
             const counter = document.getElementById('lightboxCounter');
 
             lightboxImg.src = images[index];
-            counter.textContent = (index + 1) + ' / ' + totalPages;
+            counter.textContent = (index + 1) + ' / ' + totalImages;
             lightbox.classList.add('active');
 
             resetZoom();
@@ -778,16 +767,6 @@
             if (e.key === '+' || e.key === '=') zoomIn();
             if (e.key === '-') zoomOut();
             if (e.key === '0') resetZoom();
-            if (e.key === 'ArrowRight') {
-                if (currentPage < totalPages - 1) {
-                    openLightbox(currentPage + 1);
-                }
-            }
-            if (e.key === 'ArrowLeft') {
-                if (currentPage > 0) {
-                    openLightbox(currentPage - 1);
-                }
-            }
         });
 
         // Scroll to zoom (desktop)
